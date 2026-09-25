@@ -12,10 +12,8 @@ export async function addPost(body) {
     const { title } = body
     const posts = postRepo.getAll()
     const existingPost = posts.find(post => post.title === title)
-
     if (existingPost) {
         return null
     }
-
     return postRepo.addPost(body)
 }
