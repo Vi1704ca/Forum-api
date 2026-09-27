@@ -34,26 +34,34 @@ let posts = [
         author: 'WikaTi',
         category: 'programming'
     },
-];
-export function getAll(category, take) {
-    let result = [...posts];
+]
+
+
+export function getAll(category: string, take: number) {
+    let result = [...posts]
+
     if (category) {
-        result = result.filter(post => post.category === category);
+        result = result.filter(post => post.category === category)
     }
     if (take) {
-        result = result.slice(0, take);
+        result = result.slice(0, take)
     }
-    return result;
+
+    return result
 }
-export function getById(id) {
-    return posts.find(post => post.id === id);
+
+export function getById(id: number) {
+    return posts.find(post => post.id === id)
 }
-export async function addPost(post) {
-    const lastPost = posts[posts.length - 1];
+
+export async function addPost(post: { title: string, content: string, author: string, category: string }) {
+    const lastPost = posts[posts.length - 1]
     const newPost = {
         id: lastPost ? lastPost.id + 1 : 0,
         ...post
-    };
-    posts = [...posts, newPost];
-    return newPost;
+    }
+
+    posts = [...posts, newPost]
+    return newPost
 }
+
