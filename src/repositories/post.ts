@@ -37,7 +37,7 @@ let posts = [
 ]
 
 
-export function getAll(category, take) {
+export function getAll(category: string, take: number) {
     let result = [...posts]
 
     if (category) {
@@ -50,13 +50,14 @@ export function getAll(category, take) {
     return result
 }
 
-export function getById(id) {
+export function getById(id: number) {
     return posts.find(post => post.id === id)
 }
 
-export async function addPost(post) {
+export async function addPost(post: { title: string, content: string, author: string, category: string }) {
+    const lastPost = posts[posts.length - 1]
     const newPost = {
-        id: posts.length ? posts[posts.length - 1].id + 1 : 0,
+        id: lastPost ? lastPost.id + 1 : 0,
         ...post
     }
 

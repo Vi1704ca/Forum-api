@@ -1,16 +1,18 @@
-import * as postService from '../services/post.js'
+import * as postService from '../../services/post.js'
+import type { PostResponse } from "../dto/post/responses.js";
+import type { Request, Response } from "express";
 
-export function getAll(req, res) {
+export function getAll(req: Request, res: Response) {
     const { category, take } = req.query
     const parsedTake = Number(take)
     if (take !== undefined && (!Number.isInteger(parsedTake) || parsedTake <= 0)) {
         return res.status(400).json('Wrong take')
     }
-    const result = postService.getAll(category, parsedTake || undefined)
+    const result = postService.getAll(typeof category === 'string' ? category : '', parsedTake || 0)
     return res.status(200).json(result)
 }
 
-export function getById(req, res) {
+export function getById(req: Request, res: Response<PostResponse | string>) {
     const id = Number(req.params.id)
     if (!Number.isInteger(id) || id < 0) {
         return res.status(400).json('Wrong id')
@@ -22,7 +24,7 @@ export function getById(req, res) {
     return res.status(200).json(result)
 }
 
-export async function addPost(req, res) {
+export async function addPost(req: Request, res: Response) {
     const { title, content, author, category } = req.body
     if (
         typeof title !== 'string' ||
