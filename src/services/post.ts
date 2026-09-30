@@ -1,20 +1,20 @@
-import * as postRepo from '../repositories/post.js'
+import type { Repository } from '../domain/post/repository.js'
+import type { NewPost } from '../domain/post/entity.js'
+import type { PostService } from './post.types.js'
 
-export function getAll(category: string, take: number) {
-    return postRepo.getAll(category, take)
-}
-
-export function getById(id: number) {
-    return postRepo.getById(id)
-}
-
-export async function addPost(body: { title: string, content: string, author: string, category: string }) {
-    const { title } = body
-    
-    const allPosts = postRepo.getAll(body.category, Number.MAX_SAFE_INTEGER)
-    const existingPost = allPosts.find(post => post.title === title)
-    if (existingPost) {
-        return null
+export function createPostService(postRepository: Repository): PostService {
+    async function addPost(post: NewPost) {
+        const allPosts = postRepository.getAll(post.category, Number.MAX_SAFE_INTEGER)
+        const existingPost = allPosts.find(existing => existing.title === post.title)
+        if (existingPost) {
+            return null
+        }
+        return postRepository.addPost(post)
     }
-    return postRepo.addPost(body)
+
+    return {
+        getAll: (category, take) => postRepository.getAll(category, take),
+        getById: id => postRepository.getById(id),
+        addPost
+    }
 }

@@ -1,4 +1,8 @@
-let posts = [
+import type { NewPost, Post } from '../domain/post/entity.js'
+import type { Repository } from '../domain/post/repository.js'
+
+export function createPostRepository(): Repository {
+    let posts: Post[] = [
     {
         id: 0,
         title: 'Hallo Welt',
@@ -34,34 +38,36 @@ let posts = [
         author: 'WikaTi',
         category: 'programming'
     },
-]
+    ]
 
+    function getAll(category: string, take: number) {
+        let result = [...posts]
 
-export function getAll(category: string, take: number) {
-    let result = [...posts]
+        if (category) {
+            result = result.filter(post => post.category === category)
+        }
+        if (take) {
+            result = result.slice(0, take)
+        }
 
-    if (category) {
-        result = result.filter(post => post.category === category)
-    }
-    if (take) {
-        result = result.slice(0, take)
-    }
-
-    return result
-}
-
-export function getById(id: number) {
-    return posts.find(post => post.id === id)
-}
-
-export async function addPost(post: { title: string, content: string, author: string, category: string }) {
-    const lastPost = posts[posts.length - 1]
-    const newPost = {
-        id: lastPost ? lastPost.id + 1 : 0,
-        ...post
+        return result
     }
 
-    posts = [...posts, newPost]
-    return newPost
+    function getById(id: number) {
+        return posts.find(post => post.id === id)
+    }
+
+    async function addPost(post: NewPost) {
+        const lastPost = posts[posts.length - 1]
+        const newPost: Post = {
+            id: lastPost ? lastPost.id + 1 : 0,
+            ...post
+        }
+
+        posts = [...posts, newPost]
+        return newPost
+    }
+
+    return { getAll, getById, addPost }
 }
 
