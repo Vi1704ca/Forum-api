@@ -5,14 +5,22 @@
   "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/app.js"
+    "start": "tsx src/app.ts",
+    "contract:emit": "prisma contract emit"
   },
   "keywords": [],
   "type": "module",
   "dependencies": {
+    "@prisma/orm-postgres": "^8.0.0-rc.17",
     "@types/express": "^5.0.6",
+    "dotenv": "^18.0.6",
     "express": "^5.2.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
+  },
+  "devDependencies": {
+    "@prisma/cli-engine": "^0.7.0",
+    "@types/node": "^26.6.4",
+    "prisma": "^8.0.0-rc.22"
   }
 }

@@ -4,7 +4,7 @@ import type { PostService } from './post.types.js'
 
 export function createPostService(postRepository: Repository): PostService {
     async function addPost(post: NewPost) {
-        const allPosts = postRepository.getAll(post.category, Number.MAX_SAFE_INTEGER)
+        const allPosts = await postRepository.getAll(post.category, 0)
         const existingPost = allPosts.find(existing => existing.title === post.title)
         if (existingPost) {
             return null
