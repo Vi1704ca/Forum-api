@@ -1,7 +1,7 @@
 import type { NewPost, Post } from './entity.js'
 
 export interface Repository {
-    getAll(category: string, take: number): Post[]
-    getById(id: number): Post | undefined
+    getAll(category: string, take: number): Promise<Post[]>
+    getById(id: number): Promise<Post | undefined>
     addPost(post: NewPost): Promise<Post>
 }

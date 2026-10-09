@@ -10,7 +10,7 @@ export interface PostHandlers {
 }
 
 export function createPostHandlers(postService: PostService): PostHandlers {
-    function getAll(
+    async function getAll(
         req: Request<Record<string, string>, PostResponse[] | string, unknown, GetAllPostsQuery>,
         res: Response<PostResponse[] | string>
     ) {
@@ -19,16 +19,16 @@ export function createPostHandlers(postService: PostService): PostHandlers {
         if (take !== undefined && (!Number.isInteger(parsedTake) || parsedTake <= 0)) {
             return res.status(400).json('Wrong take')
         }
-        const result = postService.getAll(typeof category === 'string' ? category : '', parsedTake || 0)
+        const result = await postService.getAll(typeof category === 'string' ? category : '', parsedTake || 0)
         return res.status(200).json(result)
     }
 
-    function getById(req: Request<{ id: string }>, res: Response<PostResponse | string>) {
+    async function getById(req: Request<{ id: string }>, res: Response<PostResponse | string>) {
         const id = Number(req.params.id)
         if (!Number.isInteger(id) || id < 0) {
             return res.status(400).json('Wrong id')
         }
-        const result = postService.getById(id)
+        const result = await postService.getById(id)
         if (!result) {
             return res.status(404).json('There is no post with this id')
         }
