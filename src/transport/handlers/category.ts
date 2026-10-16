@@ -62,7 +62,7 @@ export function createCategoryHandlers(categoryService: CategoryService): Catego
             const category = await categoryService.addCategory({ name })
             res.status(201).json(category)
         } catch (error) {
-            if (isUniqueConstraintViolation(error)) {
+            if (isUniqueConstraintViolation(error, 'Category_name_key')) {
                 res.status(409).json('Category with this name already exists')
                 return
             }

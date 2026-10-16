@@ -1,21 +1,19 @@
-import type { Category, NewCategory } from '../domain/category/entity.js'
 import type { Repository } from '../domain/category/repository.js'
-import type { db } from '../prisma/db.js'
 
-export function createCategoryRepository(database: typeof db): Repository {
-    const categories = database.orm.public.Category
+type Database = typeof import('../prisma/db.js').db
 
-    async function getAll(): Promise<Category[]> {
-        return categories.orderBy(category => category.id.asc()).all()
+export function createCategoryRepository(database: Database): Repository {
+    return {
+        async getAll() {
+            return database.orm.public.Category
+                .orderBy(category => category.id.asc())
+                .all()
+        },
+        async getById(id) {
+            return (await database.orm.public.Category.where({ id }).first()) ?? undefined
+        },
+        async addCategory(category) {
+            return database.orm.public.Category.create(category)
+        },
     }
-
-    async function getById(id: number): Promise<Category | undefined> {
-        return (await categories.first({ id })) ?? undefined
-    }
-
-    async function addCategory(category: NewCategory): Promise<Category> {
-        return categories.create(category)
-    }
-
-    return { getAll, getById, addCategory }
 }

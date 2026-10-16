@@ -1,7 +1,11 @@
 import type { PostService } from '../../services/post.types.js'
 import type { CreatePostRequest, GetAllPostsQuery } from '../dto/post/requests.js'
 import type { PostResponse } from '../dto/post/responses.js'
-import { isForeignKeyViolation, isUniqueConstraintViolation } from '../errors.js'
+import {
+    isForeignKeyViolation,
+    isMissingRelationRow,
+    isUniqueConstraintViolation,
+} from '../errors.js'
 import type { RequestHandler } from 'express'
 
 export interface PostHandlers {
@@ -116,11 +120,11 @@ export function createPostHandlers(postService: PostService): PostHandlers {
             }
             res.status(201).json(result)
         } catch (error) {
-            if (isUniqueConstraintViolation(error)) {
+            if (isUniqueConstraintViolation(error, 'Post_title_key')) {
                 res.status(409).json('Post with this title already exists')
                 return
             }
-            if (isForeignKeyViolation(error)) {
+            if (isForeignKeyViolation(error) || isMissingRelationRow(error)) {
                 res.status(404).json('There is no category with this id')
                 return
             }
