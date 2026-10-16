@@ -1,30 +1,42 @@
-import type { NewPost, Post } from '../domain/post/entity.js'
 import type { Repository } from '../domain/post/repository.js'
-import type { db } from '../prisma/db.js'
 
-export function createPostRepository(database: typeof db): Repository {
-    const posts = database.orm.public.Post
+type Database = typeof import('../prisma/db.js').db
 
-    async function getAll(category: string, take: number): Promise<Post[]> {
-        let query = posts
+export function createPostRepository(database: Database): Repository {
+    return {
+        async getAll(filter) {
+            let query = database.orm.public.Post
+                .include('category')
+                .orderBy(post => post.id.asc())
 
-        if (category) {
-            query = query.where({ category })
-        }
-        if (take) {
-            query = query.limit(take)
-        }
-
-        return query.orderBy(post => post.id.asc()).all()
+            if (filter.category !== undefined) {
+                const category = await database.orm.public.Category
+                    .where({ name: filter.category })
+                    .first()
+                if (!category) return []
+                query = query.where({ categoryId: category.id })
+            }
+            if (filter.categoryId !== undefined) {
+                query = query.where({ categoryId: filter.categoryId })
+            }
+            if (filter.take !== undefined) {
+                return query.limit(filter.take).all()
+            }
+            return query.all()
+        },
+        async getById(id) {
+            return (await database.orm.public.Post
+                .include('category')
+                .where({ id })
+                .first()) ?? undefined
+        },
+        async addPost(post) {
+            return database.orm.public.Post.include('category').create({
+                title: post.title,
+                content: post.content,
+                author: post.author,
+                category: category => category.connect({ id: post.categoryId }),
+            })
+        },
     }
-
-    async function getById(id: number): Promise<Post | undefined> {
-        return (await posts.first({ id })) ?? undefined
-    }
-
-    async function addPost(post: NewPost): Promise<Post> {
-        return posts.create(post)
-    }
-
-    return { getAll, getById, addPost }
 }
