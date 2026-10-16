@@ -1,7 +1,7 @@
-import type { NewPost, Post } from '../domain/post/entity.js'
+import type { NewPost, Post, PostFilter } from '../domain/post/entity.js'
 
 export interface PostService {
-    getAll(category: string, take: number): Promise<Post[]>
+    getAll(filter: PostFilter): Promise<Post[]>
     getById(id: number): Promise<Post | undefined>
-    addPost(post: NewPost): Promise<Post | null>
+    addPost(post: NewPost): Promise<Post | undefined>
 }
