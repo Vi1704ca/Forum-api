@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx src/app.ts",
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "db:init": "prisma db init"
   },
   "keywords": [],
   "type": "module",
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.17",
     "@types/express": "^5.0.6",
+    "argon2": "^0.45.1",
     "dotenv": "^18.0.6",
     "express": "^5.2.1",
     "tsx": "^4.23.15",
