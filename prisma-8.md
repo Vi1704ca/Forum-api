@@ -71,13 +71,27 @@ DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
 
 You can customize how your environment variables are loaded by changing or removing the `import 'dotenv/config'` line.
 
+## User registration
+
+The API exposes `POST /register` with a JSON body containing `email` and
+`password`. Passwords are stored as Argon2id hashes, and the response contains
+only the new user's `id` and `email`.
+
+After changing the data contract, regenerate the contract files and initialize
+the database schema with:
+
+```bash
+npm run contract:emit
+npm run db:init
+```
+
 ## Quick reference
 
 ### Commands
 
 ```bash
-npx prisma contract emit       # Update contract.json and contract.d.ts
-npx prisma db init             # Create tables in the database
+npm run contract:emit          # Update contract.json and contract.d.ts
+npm run db:init                # Create tables in the database
 npx prisma migration status    # Show migration status
 ```
 
