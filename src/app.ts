@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import { passwordHasher } from './lib/password.js'
 import { db } from './prisma/db.js'
 import { createCategoryRepository } from './repositories/category.js'
@@ -28,6 +29,9 @@ const userHandlers = createUserHandlers(userService)
 const userRouter = createUserRouter(userHandlers)
 
 const app = express()
+app.use(cors({
+  origin: 'http://localhost:5173',
+}))
 app.use(express.json())
 app.use('/categories', categoryRouter)
 app.use('/posts', postRouter)
