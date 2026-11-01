@@ -44,5 +44,6 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-  }
+  },
+  "exclude": ["migrations"]
 }

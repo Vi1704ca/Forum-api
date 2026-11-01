@@ -12,4 +12,5 @@ export interface PasswordHasher {
 
 export interface UserService {
     register(input: UserInput): Promise<PublicUser>
+    login(input: UserInput): Promise<{ user: PublicUser; accessToken: string }>
 }

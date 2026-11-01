@@ -2,41 +2,39 @@ import type { Repository } from '../domain/post/repository.js'
 
 type Database = typeof import('../prisma/db.js').db
 
+function postsWithRelations(database: Database) {
+    return database.orm.public.Post
+        .include('category')
+        .include('author', author => author.select('id', 'email'))
+}
+
+function withoutAuthorName<T extends { authorName: unknown }>(post: T) {
+    const { authorName: _authorName, ...postData } = post
+    return postData
+}
+
 export function createPostRepository(database: Database): Repository {
     return {
-        async getAll(filter) {
-            let query = database.orm.public.Post
-                .include('category')
+        async getAll() {
+            const posts = await postsWithRelations(database)
                 .orderBy(post => post.id.asc())
-
-            if (filter.category !== undefined) {
-                const category = await database.orm.public.Category
-                    .where({ name: filter.category })
-                    .first()
-                if (!category) return []
-                query = query.where({ categoryId: category.id })
-            }
-            if (filter.categoryId !== undefined) {
-                query = query.where({ categoryId: filter.categoryId })
-            }
-            if (filter.take !== undefined) {
-                return query.limit(filter.take).all()
-            }
-            return query.all()
+                .all()
+            return posts.map(withoutAuthorName)
         },
         async getById(id) {
-            return (await database.orm.public.Post
-                .include('category')
+            const post = await postsWithRelations(database)
                 .where({ id })
-                .first()) ?? undefined
+                .first()
+            return post ? withoutAuthorName(post) : null
         },
         async addPost(post) {
-            return database.orm.public.Post.include('category').create({
+            const createdPost = await postsWithRelations(database).create({
                 title: post.title,
                 content: post.content,
-                author: post.author,
                 category: category => category.connect({ id: post.categoryId }),
+                author: author => author.connect({ id: post.authorId }),
             })
+            return withoutAuthorName(createdPost)
         },
     }
 }
