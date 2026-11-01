@@ -247,8 +247,8 @@ export type FieldOutputTypes = {
     };
     readonly User: {
       readonly email: CodecTypes['pg/text@1']['output'];
-      readonly hashPassword: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly passwordHash: CodecTypes['pg/text@1']['output'];
     };
   };
 };
@@ -268,8 +268,8 @@ export type FieldInputTypes = {
     };
     readonly User: {
       readonly email: CodecTypes['pg/text@1']['input'];
-      readonly hashPassword: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly passwordHash: CodecTypes['pg/text@1']['input'];
     };
   };
 };
@@ -336,8 +336,8 @@ export namespace Models {
   };
   export type public_User = {
     email: CodecTypes['pg/text@1']['output'];
-    hashPassword: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
+    passwordHash: CodecTypes['pg/text@1']['output'];
     posts: public_Post[];
     readonly [RelationKeys]?: 'posts';
   };
@@ -627,13 +627,13 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly hashPassword: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly passwordHash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
             };
             readonly relations: {
@@ -651,8 +651,8 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly email: { readonly column: 'email' };
-                readonly hashPassword: { readonly column: 'hashPassword' };
                 readonly id: { readonly column: 'id' };
+                readonly passwordHash: { readonly column: 'hashPassword' };
               };
             };
           };

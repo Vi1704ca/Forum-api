@@ -1,7 +1,7 @@
 export interface User {
     id: number
     email: string
-    hashPassword: string
+    passwordHash: string
 }
 
-export type PublicUser = Omit<User, 'hashPassword'>
+export type PublicUser = Omit<User, 'passwordHash'>
