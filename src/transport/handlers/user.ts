@@ -5,8 +5,24 @@ import type { ErrorResponse } from '../dto/user/errors.js'
 import type { RegisterUserRequest } from '../dto/user/requests.js'
 import type { UserResponse } from '../dto/user/responses.js'
 
+function isValidEmail(email: unknown): email is string {
+    if (typeof email !== 'string') return false
+
+    const emailParts = email.trim().split('@')
+    if (emailParts.length !== 2) return false
+
+    const emailName = emailParts[0]
+    const emailDomain = emailParts[1]
+    if (!emailName || !emailDomain) return false
+
+    return emailDomain.includes('.') &&
+        !emailDomain.startsWith('.') &&
+        !emailDomain.endsWith('.')
+}
+
 export interface UserHandlers {
     register: RequestHandler<Record<string, string>, UserResponse | ErrorResponse, RegisterUserRequest>
+    login: RequestHandler<Record<string, string>, UserResponse | ErrorResponse, RegisterUserRequest>
 }
 
 export function createUserHandlers(userService: UserService): UserHandlers {
@@ -18,17 +34,8 @@ export function createUserHandlers(userService: UserService): UserHandlers {
         }
 
         const { email, password } = body
-        const emailParts = typeof email === 'string' ? email.trim().split('@') : []
-        const emailName = emailParts[0]
-        const emailDomain = emailParts[1]
         if (
-            typeof email !== 'string' ||
-            emailParts.length !== 2 ||
-            !emailName ||
-            !emailDomain ||
-            !emailDomain.includes('.') ||
-            emailDomain.startsWith('.') ||
-            emailDomain.endsWith('.') ||
+            !isValidEmail(email) ||
             typeof password !== 'string' ||
             password.length < 8
         ) {
@@ -58,5 +65,42 @@ export function createUserHandlers(userService: UserService): UserHandlers {
         }
     }
 
-    return { register }
+    const login: UserHandlers['login'] = async (req, res): Promise<void> => {
+        const body = req.body
+        if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+            res.status(422).json({ message: 'Invalid login fields' })
+            return
+        }
+
+        const { email, password } = body
+        if (
+            !isValidEmail(email) ||
+            typeof password !== 'string' ||
+            !password
+        ) {
+            res.status(422).json({ message: 'A valid email and password are required' })
+            return
+        }
+
+        try {
+            const result = await userService.login({ email, password })
+            res.cookie('accessToken', result.accessToken, {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env['NODE_ENV'] === 'production',
+                maxAge: 60 * 60 * 1000,
+                path: '/',
+            })
+            res.status(200).json(result.user)
+        } catch (error) {
+            if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
+                res.status(401).json({ message: 'Invalid email or password' })
+                return
+            }
+            console.error(error)
+            res.status(500).json({ message: 'Internal server error' })
+        }
+    }
+
+    return { register, login }
 }

@@ -1,10 +1,12 @@
 import type { Category } from '../category/entity.js'
+import type { PublicUser } from '../user/entity.js'
 
 export interface Post {
     id: number
     title: string
     content: string
-    author: string
+    authorId: number | null
+    author: PublicUser | null
     categoryId: number
     category: Category
 }
@@ -12,12 +14,6 @@ export interface Post {
 export interface NewPost {
     title: string
     content: string
-    author: string
+    authorId: number
     categoryId: number
-}
-
-export interface PostFilter {
-    category?: string
-    categoryId?: number
-    take?: number
 }

@@ -8,7 +8,7 @@ export function createPostService(postRepository: Repository): PostService {
     }
 
     return {
-        getAll: filter => postRepository.getAll(filter),
+        getAll: () => postRepository.getAll(),
         getById: id => postRepository.getById(id),
         addPost
     }

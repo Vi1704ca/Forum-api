@@ -1,5 +1,5 @@
 import type { PostService } from '../../services/post.types.js'
-import type { CreatePostRequest, GetAllPostsQuery } from '../dto/post/requests.js'
+import type { CreatePostRequest } from '../dto/post/requests.js'
 import type { PostResponse } from '../dto/post/responses.js'
 import {
     isForeignKeyViolation,
@@ -9,53 +9,15 @@ import {
 import type { RequestHandler } from 'express'
 
 export interface PostHandlers {
-    getAll: RequestHandler<Record<string, string>, PostResponse[] | string, unknown, GetAllPostsQuery>
+    getAll: RequestHandler<Record<string, string>, PostResponse[] | string>
     getById: RequestHandler<{ id: string }, PostResponse | string>
     addPost: RequestHandler<Record<string, string>, PostResponse | string, CreatePostRequest>
 }
 
 export function createPostHandlers(postService: PostService): PostHandlers {
-    const getAll: PostHandlers['getAll'] = async (req, res): Promise<void> => {
-        const allowedQueryFields = ['category', 'categoryId', 'take']
-        if (Object.keys(req.query).some(field => !allowedQueryFields.includes(field))) {
-            res.status(422).json('Invalid query fields')
-            return
-        }
-
-        const { category, categoryId, take } = req.query
-        if (
-            (category !== undefined && typeof category !== 'string') ||
-            (take !== undefined && typeof take !== 'string') ||
-            (categoryId !== undefined && typeof categoryId !== 'string')
-        ) {
-            res.status(422).json('Invalid query fields')
-            return
-        }
-
-        let parsedCategoryId: number | undefined
-        if (categoryId !== undefined) {
-            parsedCategoryId = Number(categoryId)
-            if (!Number.isInteger(parsedCategoryId) || parsedCategoryId <= 0) {
-                res.status(400).json('Invalid categoryId')
-                return
-            }
-        }
-
-        let parsedTake: number | undefined
-        if (take !== undefined) {
-            parsedTake = Number(take)
-            if (!Number.isInteger(parsedTake) || parsedTake <= 0) {
-                res.status(400).json('Invalid take')
-                return
-            }
-        }
-
+    const getAll: PostHandlers['getAll'] = async (_req, res): Promise<void> => {
         try {
-            const result = await postService.getAll({
-                ...(category !== undefined ? { category } : {}),
-                ...(parsedCategoryId !== undefined ? { categoryId: parsedCategoryId } : {}),
-                ...(parsedTake !== undefined ? { take: parsedTake } : {}),
-            })
+            const result = await postService.getAll()
             res.status(200).json(result)
         } catch (error) {
             console.error(error)
@@ -88,22 +50,25 @@ export function createPostHandlers(postService: PostService): PostHandlers {
             req.body === null ||
             typeof req.body !== 'object' ||
             Array.isArray(req.body) ||
-            Object.keys(req.body).some(field => !['title', 'content', 'author', 'categoryId'].includes(field))
+            Object.keys(req.body).some(field => !['title', 'content', 'authorId', 'categoryId'].includes(field))
         ) {
             res.status(422).json('Invalid post fields')
             return
         }
 
-        const { title, content, author, categoryId } = req.body
+        const { title, content, authorId, categoryId } = req.body
         if (
             typeof title !== 'string' ||
             typeof content !== 'string' ||
-            typeof author !== 'string' ||
             !title.trim() ||
-            !content.trim() ||
-            !author.trim()
+            !content.trim()
         ) {
             res.status(422).json('Invalid post data')
+            return
+        }
+
+        if (!Number.isInteger(authorId) || authorId <= 0) {
+            res.status(400).json('Invalid authorId')
             return
         }
 
@@ -113,9 +78,9 @@ export function createPostHandlers(postService: PostService): PostHandlers {
         }
 
         try {
-            const result = await postService.addPost({ title, content, author, categoryId })
+            const result = await postService.addPost({ title, content, authorId, categoryId })
             if (!result) {
-                res.status(404).json('There is no category with this id')
+                res.status(404).json('There is no referenced user or category with this id')
                 return
             }
             res.status(201).json(result)
@@ -125,7 +90,7 @@ export function createPostHandlers(postService: PostService): PostHandlers {
                 return
             }
             if (isForeignKeyViolation(error) || isMissingRelationRow(error)) {
-                res.status(404).json('There is no category with this id')
+                res.status(404).json('There is no referenced user or category with this id')
                 return
             }
             console.error(error)
