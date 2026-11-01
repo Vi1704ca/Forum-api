@@ -17,14 +17,14 @@ export function createUserService(
             const passwordHash = await hasher.hash(input.password)
             const user = await repository.createUser({
                 email,
-                hashPassword: passwordHash,
+                passwordHash,
             })
             return { id: user.id, email: user.email }
         },
         async login(input) {
             const email = input.email.trim().toLowerCase()
             const user = await repository.findByEmail(email)
-            if (!user || !(await hasher.verify(input.password, user.hashPassword))) {
+            if (!user || !(await hasher.verify(input.password, user.passwordHash))) {
                 throw new Error('INVALID_CREDENTIALS')
             }
 
