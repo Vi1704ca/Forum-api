@@ -1,3 +1,4 @@
+import type { PostRecord } from '../domain/post/entity.js'
 import type { Repository } from '../domain/post/repository.js'
 
 type Database = typeof import('../prisma/db.js').db
@@ -8,33 +9,35 @@ function postsWithRelations(database: Database) {
         .include('author', author => author.select('id', 'email'))
 }
 
-function withoutAuthorName<T extends { authorName: unknown }>(post: T) {
-    const { authorName: _authorName, ...postData } = post
-    return postData
-}
-
 export function createPostRepository(database: Database): Repository {
     return {
         async getAll() {
-            const posts = await postsWithRelations(database)
+            const posts: PostRecord[] = await postsWithRelations(database)
                 .orderBy(post => post.id.asc())
                 .all()
-            return posts.map(withoutAuthorName)
+            return posts
         },
         async getById(id) {
-            const post = await postsWithRelations(database)
+            const post: PostRecord | null = await postsWithRelations(database)
                 .where({ id })
                 .first()
-            return post ? withoutAuthorName(post) : null
+            return post
+        },
+        async getByAuthorId(authorId) {
+            const posts: PostRecord[] = await postsWithRelations(database)
+                .where({ authorId })
+                .orderBy(post => post.id.asc())
+                .all()
+            return posts
         },
         async addPost(post) {
-            const createdPost = await postsWithRelations(database).create({
+            const createdPost: PostRecord = await postsWithRelations(database).create({
                 title: post.title,
                 content: post.content,
                 category: category => category.connect({ id: post.categoryId }),
                 author: author => author.connect({ id: post.authorId }),
             })
-            return withoutAuthorName(createdPost)
+            return createdPost
         },
     }
 }

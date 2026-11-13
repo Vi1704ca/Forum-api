@@ -6,11 +6,13 @@ import {
     isMissingRelationRow,
     isUniqueConstraintViolation,
 } from '../errors.js'
+
 import type { RequestHandler } from 'express'
 
 export interface PostHandlers {
     getAll: RequestHandler<Record<string, string>, PostResponse[] | string>
     getById: RequestHandler<{ id: string }, PostResponse | string>
+    getOwnPosts: RequestHandler<Record<string, string>, PostResponse[] | string>
     addPost: RequestHandler<Record<string, string>, PostResponse | string, CreatePostRequest>
 }
 
@@ -39,6 +41,16 @@ export function createPostHandlers(postService: PostService): PostHandlers {
                 return
             }
             res.status(200).json(result)
+        } catch (error) {
+            console.error(error)
+            res.status(500).json("Server's error")
+        }
+    }
+
+    const getOwnPosts: PostHandlers['getOwnPosts'] = async (_req, res): Promise<void> => {
+        try {
+            const posts = await postService.getByAuthorId(res.locals.userId)
+            res.status(200).json(posts)
         } catch (error) {
             console.error(error)
             res.status(500).json("Server's error")
@@ -98,5 +110,5 @@ export function createPostHandlers(postService: PostService): PostHandlers {
         }
     }
 
-    return { getAll, getById, addPost }
+    return { getAll, getById, getOwnPosts, addPost }
 }

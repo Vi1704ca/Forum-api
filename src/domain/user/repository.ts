@@ -4,5 +4,6 @@ export type NewUser = Omit<User, "id">
 
 export interface UserRepository {
     findByEmail(email: string): Promise<User | null>
+    findById(id: number): Promise<User | null>
     createUser(user: NewUser): Promise<User>
 }

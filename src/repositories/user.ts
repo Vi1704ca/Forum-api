@@ -7,6 +7,9 @@ export function createUserRepository(database: Database): UserRepository {
         async findByEmail(email) {
             return database.orm.public.User.where({ email }).first()
         },
+        async findById(id) {
+            return database.orm.public.User.where({ id }).first()
+        },
         async createUser(user) {
             return database.orm.public.User.create(user)
         },

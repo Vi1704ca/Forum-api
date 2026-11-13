@@ -11,6 +11,10 @@ export interface Post {
     category: Category
 }
 
+export interface PostRecord extends Post {
+    authorName?: string | null
+}
+
 export interface NewPost {
     title: string
     content: string
