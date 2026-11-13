@@ -4,6 +4,13 @@ import { isUniqueConstraintViolation } from '../errors.js'
 import type { ErrorResponse } from '../dto/user/errors.js'
 import type { RegisterUserRequest } from '../dto/user/requests.js'
 import type { UserResponse } from '../dto/user/responses.js'
+import { readCookie } from '../../lib/cookie.js'
+import {
+    ACCESS_TOKEN_COOKIE,
+    REFRESH_TOKEN_COOKIE,
+    clearAuthCookies,
+    setAuthCookies,
+} from '../../lib/authCookies.js'
 
 function isValidEmail(email: unknown): email is string {
     if (typeof email !== 'string') return false
@@ -23,6 +30,8 @@ function isValidEmail(email: unknown): email is string {
 export interface UserHandlers {
     register: RequestHandler<Record<string, string>, UserResponse | ErrorResponse, RegisterUserRequest>
     login: RequestHandler<Record<string, string>, UserResponse | ErrorResponse, RegisterUserRequest>
+    me: RequestHandler<Record<string, string>, UserResponse | ErrorResponse>
+    refresh: RequestHandler<Record<string, string>, UserResponse | ErrorResponse>
 }
 
 export function createUserHandlers(userService: UserService): UserHandlers {
@@ -84,13 +93,7 @@ export function createUserHandlers(userService: UserService): UserHandlers {
 
         try {
             const result = await userService.login({ email, password })
-            res.cookie('accessToken', result.accessToken, {
-                httpOnly: true,
-                sameSite: 'lax',
-                secure: process.env['NODE_ENV'] === 'production',
-                maxAge: 60 * 60 * 1000,
-                path: '/',
-            })
+            setAuthCookies(res, result.accessToken, result.refreshToken)
             res.status(200).json(result.user)
         } catch (error) {
             if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
@@ -102,5 +105,42 @@ export function createUserHandlers(userService: UserService): UserHandlers {
         }
     }
 
-    return { register, login }
+    const me: UserHandlers['me'] = async (_req, res): Promise<void> => {
+        try {
+            const user = await userService.getById(res.locals.userId)
+            if (!user) {
+                res.status(404).json({ message: 'User not found' })
+                return
+            }
+            res.status(200).json(user)
+        } catch (error) {
+            console.error(error)
+            res.status(500).json({ message: 'Internal server error' })
+        }
+    }
+
+    const refresh: UserHandlers['refresh'] = async (req, res): Promise<void> => {
+        const token = readCookie(req, REFRESH_TOKEN_COOKIE)
+        if (!token) {
+            clearAuthCookies(res)
+            res.status(401).json({ message: 'Refresh token required' })
+            return
+        }
+
+        try {
+            const result = await userService.refresh(token)
+            if (!result) {
+                clearAuthCookies(res)
+                res.status(401).json({ message: 'Invalid or expired refresh token' })
+                return
+            }
+            setAuthCookies(res, result.accessToken)
+            res.status(200).json(result.user)
+        } catch (error) {
+            console.error(error)
+            res.status(500).json({ message: 'Internal server error' })
+        }
+    }
+
+    return { register, login, me, refresh }
 }

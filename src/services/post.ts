@@ -3,13 +3,10 @@ import type { NewPost } from '../domain/post/entity.js'
 import type { PostService } from './post.types.js'
 
 export function createPostService(postRepository: Repository): PostService {
-    async function addPost(post: NewPost) {
-        return postRepository.addPost(post)
-    }
-
     return {
         getAll: () => postRepository.getAll(),
         getById: id => postRepository.getById(id),
-        addPost
+        getByAuthorId: authorId => postRepository.getByAuthorId(authorId),
+        addPost: post => postRepository.addPost(post),
     }
 }
