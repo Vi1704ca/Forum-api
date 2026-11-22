@@ -22,4 +22,16 @@ model User {
   email        String @unique
   passwordHash String @map("hashPassword")
   posts        Post[]
+  refreshSessions RefreshSession[]
+}
+
+model RefreshSession {
+  id        String             @id
+  tokenHash String             @unique
+  userId    Int
+  createdAt TimestamptzString(3) @default(now())
+  updatedAt TimestamptzString(3) @default(now())
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
