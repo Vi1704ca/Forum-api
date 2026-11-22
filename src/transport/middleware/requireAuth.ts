@@ -1,30 +1,25 @@
 import type { RequestHandler } from 'express'
-import { readCookie } from '../../lib/cookie.js'
-import { verifyAccessToken } from '../../lib/accessToken.js'
 import { ACCESS_TOKEN_COOKIE } from '../../lib/authCookies.js'
 
-export const requireAuth: RequestHandler = (req, res, next): void => {
-    let token = readCookie(req, ACCESS_TOKEN_COOKIE)
-    const authorization = req.get('authorization')
-    if (authorization && authorization.startsWith('Bearer ')) {
-        token = authorization.slice(7).trim()
-    }
-
-    if (!token) {
-        res.status(401).json({ message: 'Authentication required' })
-        return
-    }
-
-    try {
-        const user = verifyAccessToken(token)
-        if (!user) {
-            res.status(401).json({ message: 'Invalid access token' })
+export function createRequireAuth(
+    verifyAccessToken: (token: string) => number,
+): RequestHandler {
+    return (req, res, next): void => {
+        const token = req.cookies?.[ACCESS_TOKEN_COOKIE]
+        if (typeof token !== 'string') {
+            res.status(401).json({ message: 'Authentication required' })
             return
         }
-        res.locals.userId = user.id
-        next()
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal server error' })
+
+        try {
+            res.locals.userId = verifyAccessToken(token)
+            next()
+        } catch (error) {
+            if (error instanceof Error && error.message === 'INVALID_ACCESS_TOKEN') {
+                res.status(401).json({ message: 'Invalid access token' })
+                return
+            }
+            next(error)
+        }
     }
 }

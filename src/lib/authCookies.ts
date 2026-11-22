@@ -14,7 +14,7 @@ export function setAuthCookies(
         httpOnly: true,
         sameSite: 'lax',
         secure,
-        maxAge: 60 * 60 * 1000,
+        maxAge: 15 * 60 * 1000,
         path: '/',
     })
 
@@ -24,7 +24,7 @@ export function setAuthCookies(
             sameSite: 'lax',
             secure,
             maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: '/refresh',
+            path: '/',
         })
     }
 }
@@ -43,6 +43,6 @@ export function clearAuthCookies(res: Response): void {
         httpOnly: true,
         sameSite: 'lax',
         secure,
-        path: '/refresh',
+        path: '/',
     })
 }

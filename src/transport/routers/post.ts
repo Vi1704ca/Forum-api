@@ -1,8 +1,11 @@
 import { Router } from 'express'
 import type { PostHandlers } from '../handlers/post.js'
-import { requireAuth } from '../middleware/requireAuth.js'
+import type { RequestHandler } from 'express'
 
-export function createPostRouter(postHandlers: PostHandlers) {
+export function createPostRouter(
+	postHandlers: PostHandlers,
+	requireAuth: RequestHandler,
+) {
 	const router = Router()
 
 	router.get('/', postHandlers.getAll)

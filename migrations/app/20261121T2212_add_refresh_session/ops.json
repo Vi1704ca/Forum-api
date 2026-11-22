@@ -1,0 +1,164 @@
+[
+  {
+    "id": "table.RefreshSession",
+    "label": "Create table \"RefreshSession\"",
+    "summary": "Creates table \"RefreshSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "RefreshSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"RefreshSession\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RefreshSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"RefreshSession\"",
+        "sql": "CREATE TABLE \"public\".\"RefreshSession\" (\n  \"id\" text NOT NULL,\n  \"tokenHash\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"RefreshSession\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RefreshSession\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.RefreshSession.RefreshSession_tokenHash_key",
+    "label": "Add unique constraint on \"RefreshSession\" (tokenHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RefreshSession_tokenHash_key",
+        "table": "RefreshSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RefreshSession_tokenHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RefreshSession_tokenHash_key",
+          "public",
+          "\"public\".\"RefreshSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"RefreshSession_tokenHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"RefreshSession\" ADD CONSTRAINT \"RefreshSession_tokenHash_key\" UNIQUE (\"tokenHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RefreshSession_tokenHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RefreshSession_tokenHash_key",
+          "public",
+          "\"public\".\"RefreshSession\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RefreshSession.RefreshSession_userId_idx_a489d58a",
+    "label": "Create index \"RefreshSession_userId_idx_a489d58a\" on \"RefreshSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RefreshSession_userId_idx_a489d58a",
+        "table": "RefreshSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RefreshSession_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RefreshSession_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RefreshSession_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"RefreshSession_userId_idx_a489d58a\" ON \"public\".\"RefreshSession\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RefreshSession_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RefreshSession_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.RefreshSession.RefreshSession_userId_fkey",
+    "label": "Add foreign key \"RefreshSession_userId_fkey\" on \"RefreshSession\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "RefreshSession_userId_fkey",
+        "table": "RefreshSession"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"RefreshSession_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RefreshSession_userId_fkey",
+          "public",
+          "\"public\".\"RefreshSession\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"RefreshSession_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"RefreshSession\"\nADD CONSTRAINT \"RefreshSession_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"RefreshSession_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RefreshSession_userId_fkey",
+          "public",
+          "\"public\".\"RefreshSession\""
+        ]
+      }
+    ]
+  }
+]

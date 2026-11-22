@@ -1,12 +1,10 @@
 import type { RequestHandler } from 'express'
-import type { UserService } from '../../services/user.types.js'
+import type { AuthService } from '../../services/auth/auth.types.js'
 import { isUniqueConstraintViolation } from '../errors.js'
 import type { ErrorResponse } from '../dto/user/errors.js'
 import type { RegisterUserRequest } from '../dto/user/requests.js'
 import type { UserResponse } from '../dto/user/responses.js'
-import { readCookie } from '../../lib/cookie.js'
 import {
-    ACCESS_TOKEN_COOKIE,
     REFRESH_TOKEN_COOKIE,
     clearAuthCookies,
     setAuthCookies,
@@ -32,9 +30,10 @@ export interface UserHandlers {
     login: RequestHandler<Record<string, string>, UserResponse | ErrorResponse, RegisterUserRequest>
     me: RequestHandler<Record<string, string>, UserResponse | ErrorResponse>
     refresh: RequestHandler<Record<string, string>, UserResponse | ErrorResponse>
+    logout: RequestHandler<Record<string, string>, void | ErrorResponse>
 }
 
-export function createUserHandlers(userService: UserService): UserHandlers {
+export function createUserHandlers(authService: AuthService): UserHandlers {
     const register: UserHandlers['register'] = async (req, res): Promise<void> => {
         const body = req.body
         if (body === null || typeof body !== 'object' || Array.isArray(body)) {
@@ -55,7 +54,7 @@ export function createUserHandlers(userService: UserService): UserHandlers {
         }
 
         try {
-            const user = await userService.register({ email, password })
+            const user = await authService.register({ email, password })
             res.status(201).json(user)
         } catch (error) {
             if (
@@ -92,7 +91,7 @@ export function createUserHandlers(userService: UserService): UserHandlers {
         }
 
         try {
-            const result = await userService.login({ email, password })
+            const result = await authService.login({ email, password })
             setAuthCookies(res, result.accessToken, result.refreshToken)
             res.status(200).json(result.user)
         } catch (error) {
@@ -107,40 +106,57 @@ export function createUserHandlers(userService: UserService): UserHandlers {
 
     const me: UserHandlers['me'] = async (_req, res): Promise<void> => {
         try {
-            const user = await userService.getById(res.locals.userId)
-            if (!user) {
-                res.status(404).json({ message: 'User not found' })
-                return
-            }
+            const user = await authService.me(res.locals.userId)
             res.status(200).json(user)
         } catch (error) {
+            if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+                res.status(401).json({ message: 'Unauthorized' })
+                return
+            }
             console.error(error)
             res.status(500).json({ message: 'Internal server error' })
         }
     }
 
     const refresh: UserHandlers['refresh'] = async (req, res): Promise<void> => {
-        const token = readCookie(req, REFRESH_TOKEN_COOKIE)
-        if (!token) {
+        const token = req.cookies?.[REFRESH_TOKEN_COOKIE]
+        if (typeof token !== 'string') {
             clearAuthCookies(res)
             res.status(401).json({ message: 'Refresh token required' })
             return
         }
 
         try {
-            const result = await userService.refresh(token)
-            if (!result) {
+            const result = await authService.refresh(token)
+            setAuthCookies(res, result.accessToken, result.refreshToken)
+            res.status(200).json(result.user)
+        } catch (error) {
+            if (
+                error instanceof Error &&
+                error.message === 'INVALID_REFRESH_TOKEN'
+            ) {
                 clearAuthCookies(res)
                 res.status(401).json({ message: 'Invalid or expired refresh token' })
                 return
             }
-            setAuthCookies(res, result.accessToken)
-            res.status(200).json(result.user)
+            console.error(error)
+            res.status(500).json({ message: 'Internal server error' })
+        }
+    }
+
+    const logout: UserHandlers['logout'] = async (req, res): Promise<void> => {
+        const token = req.cookies?.[REFRESH_TOKEN_COOKIE]
+        const refreshToken = typeof token === 'string' ? token : undefined
+        clearAuthCookies(res)
+
+        try {
+            await authService.logout(refreshToken)
+            res.status(204).end()
         } catch (error) {
             console.error(error)
             res.status(500).json({ message: 'Internal server error' })
         }
     }
 
-    return { register, login, me, refresh }
+    return { register, login, me, refresh, logout }
 }
