@@ -1,0 +1,72 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.6.9/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": [
+			"**",
+			"!**/dist",
+			"!**/migrations",
+			"!**/src/prisma/contract.*",
+			"!**/package-lock.json"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 4,
+		"lineWidth": 80
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended",
+			"complexity": {
+				"useOptionalChain": "error",
+				"noExcessiveCognitiveComplexity": "error"
+			},
+			"suspicious": {
+				"noExplicitAny": "warn",
+				"noEmptyBlockStatements": "error",
+				"noImplicitAnyLet": "error",
+				"useGetterReturn": "error",
+				"noArrayIndexKey": "warn",
+				"noAssignInExpressions": "error",
+				"noDoubleEquals": "error"
+			},
+			"style": {
+				"useBlockStatements": "error",
+				"useConst": "error",
+				"noNonNullAssertion": "warn",
+				"useConsistentArrayType": "error",
+				"noParameterAssign": "error",
+				"useImportType": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "always",
+			"arrowParentheses": "always"
+		},
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "off",
+				"useSortedAttributes": "off",
+				"useSortedKeys": "off",
+				"useSortedProperties": "off"
+			}
+		}
+	}
+}

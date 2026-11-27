@@ -1,34 +1,37 @@
 {
-  "name": "forum-api",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx src/app.ts",
-    "contract:emit": "prisma contract emit",
-    "db:init": "prisma db init"
-  },
-  "keywords": [],
-  "type": "module",
-  "dependencies": {
-    "@prisma/orm-postgres": "^8.0.0-rc.17",
-    "@types/express": "^5.0.6",
-    "argon2": "^0.45.1",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "dotenv": "^18.0.6",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.2",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
-  },
-  "devDependencies": {
-    "@prisma/cli-engine": "^0.7.0",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^26.6.4",
-    "prisma": "^8.0.0-rc.22"
-  }
+	"name": "forum-api",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "tsx src/app.ts",
+		"check": "biome check .",
+		"format": "biome format --write .",
+		"contract:emit": "prisma contract emit",
+		"db:init": "prisma db init"
+	},
+	"keywords": [],
+	"type": "module",
+	"dependencies": {
+		"@prisma/orm-postgres": "^8.0.0-rc.17",
+		"@types/express": "^5.0.6",
+		"argon2": "^0.45.1",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.6",
+		"dotenv": "^18.0.6",
+		"express": "^5.2.1",
+		"jsonwebtoken": "^9.0.2",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.6.9",
+		"@prisma/cli-engine": "^0.7.0",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/cors": "^2.8.19",
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/node": "^26.6.4",
+		"prisma": "^8.0.0-rc.22"
+	}
 }
